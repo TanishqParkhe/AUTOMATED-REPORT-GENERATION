@@ -1,0 +1,85 @@
+import csv
+import statistics
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+
+def create_sample_csv(file_path):
+    """Creates a sample CSV file with predefined data."""
+    data = [
+        ["Category", "Sales", "Profit"],
+        ["Electronics", 1200, 300],
+        ["Furniture", 800, 150],
+        ["Clothing", 500, 100],
+        ["Electronics", 1500, 400],
+        ["Furniture", 950, 200],
+        ["Clothing", 600, 120],
+        ["Electronics", 1100, 280],
+        ["Furniture", 780, 130],
+        ["Clothing", 550, 110],
+    ]
+    
+    with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerows(data)
+
+def read_csv(file_path):
+    """Reads a CSV file and returns a dictionary of lists."""
+    with open(file_path, newline='', encoding='utf-8') as csvfile:
+        reader = csv.DictReader(csvfile)
+        data = {header: [] for header in reader.fieldnames}
+        for row in reader:
+            for header in row:
+                try:
+                    data[header].append(float(row[header]))
+                except ValueError:
+                    pass  # Skip non-numeric values
+    return data
+
+def analyze_data(data):
+    """Analyzes numerical data and returns summary statistics."""
+    analysis = {}
+    for key, values in data.items():
+        if values:
+            analysis[key] = {
+                'count': len(values),
+                'mean': round(statistics.mean(values), 2),
+                'median': round(statistics.median(values), 2),
+                'stdev': round(statistics.stdev(values), 2) if len(values) > 1 else 0,
+            }
+    return analysis
+
+def generate_pdf_report(analysis, output_file):
+    """Generates a PDF report from the analysis."""
+    c = canvas.Canvas(output_file, pagesize=letter)
+    width, height = letter
+    y_position = height - 50
+    
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, y_position, "Data Analysis Report")
+    c.setFont("Helvetica", 12)
+    y_position -= 30
+    
+    for column, stats in analysis.items():
+        c.drawString(50, y_position, f"Column: {column}")
+        y_position -= 20
+        for stat, value in stats.items():
+            c.drawString(70, y_position, f"{stat.capitalize()}: {value}")
+            y_position -= 15
+        y_position -= 10
+        
+        if y_position < 50:
+            c.showPage()
+            c.setFont("Helvetica", 12)
+            y_position = height - 50
+    
+    c.save()
+    print(f"Report saved as {output_file}")
+
+if __name__ == "__main__":
+    input_file = "data.csv"
+    output_pdf = "report.pdf"
+    
+    create_sample_csv(input_file)
+    data = read_csv(input_file)
+    analysis = analyze_data(data)
+    generate_pdf_report(analysis, output_pdf)

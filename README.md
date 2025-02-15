@@ -63,5 +63,7 @@ This Python script simplifies data analysis and reporting by automating the enti
 
 # OUTPUT
 
+![Image](https://github.com/user-attachments/assets/0911ebf4-222c-46b4-89da-4d311ab08e82)
+
 
 
